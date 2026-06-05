@@ -7,6 +7,8 @@ export const useMovieStore = defineStore('movie', () => {
   const favorites = ref(JSON.parse(sessionStorage.getItem('favorites')) || []);
   const isLoading = ref(false);
   const errorMessage = ref('');
+  const selectedMovie = ref(null);
+
   const fetchMovies = async () => {
     isLoading.value = true;
     errorMessage.value = '';
@@ -30,6 +32,7 @@ export const useMovieStore = defineStore('movie', () => {
       });
 
       const fetchedMovies = response.data.results;
+
       fetchedMovies.forEach((movie) => {
         const isAlreadyFavorite = favorites.value.some(fav => fav.id === movie.id);
         movie.isFavorite = isAlreadyFavorite;
@@ -39,6 +42,35 @@ export const useMovieStore = defineStore('movie', () => {
     } catch (error) {
       console.error('API 통신 에러 상세 내역:', error);
       errorMessage.value = '영화 데이터를 불러오는 데 실패했습니다. 통신 상태나 API key를 확인해 주세요.';
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const fetchMovieDetail = async (movieId) => {
+    isLoading.value = true;
+    errorMessage.value = '';
+    selectedMovie.value = null;
+
+    try {
+      const API_KEY = '15e190e30c8d323e4ed43ef50a004c78';
+
+      const response = await axios.get(`https://api.themoviedb.org/3/movie/${movieId}`, {
+        params: {
+          api_key: API_KEY,
+          language: 'ko-KR'
+        }
+      });
+
+      selectedMovie.value = response.data;
+    } catch (error) {
+      console.error('상세 영화 API 통신 에러:', error);
+
+      if (error.response && error.response.status === 404) {
+        errorMessage.value = '존재하지 않거나 삭제된 영화 정보입니다.';
+      } else {
+        errorMessage.value = '영화 상세 정보를 불러오는 데 실패했습니다.';
+      }
     } finally {
       isLoading.value = false;
     }
@@ -65,7 +97,9 @@ export const useMovieStore = defineStore('movie', () => {
     favorites,
     isLoading,
     errorMessage,
+    selectedMovie,
     fetchMovies,
+    fetchMovieDetail,
     toggleFavorite
   };
 });
