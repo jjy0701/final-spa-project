@@ -1,10 +1,10 @@
 import './assets/main.css';
 import { createApp } from 'vue';
-import { createPinia } from 'pinia'; // Pinia 불러오기 [cite: 35]
+import { createPinia } from 'pinia'; 
 import App from './App.vue';
 import router from './router';
 
 const app = createApp(App);
-app.use(createPinia()); // [cite: 40]
+app.use(createPinia()); 
 app.use(router);
 app.mount('#app');
